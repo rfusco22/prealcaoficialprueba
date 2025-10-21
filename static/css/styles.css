@@ -1,0 +1,319 @@
+/* Estilos generales */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: url(/static/uploads/Login.jpeg) no-repeat center center / cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px; /* Add padding to body for small screens */
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 0; /* Remove padding here as it's on body */
+}
+
+/* Estilos para el formulario de login */
+.login-box {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.register-box {
+  max-width: 550px;
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo img {
+  height: auto;
+  max-width: 100%; /* Ensure logo scales down */
+}
+
+h2 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+  font-weight: 500;
+}
+
+.input-field {
+  position: relative;
+}
+
+.icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="file"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px;
+  padding-left: 35px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+input[type="file"] {
+  padding-left: 12px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.options a {
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+}
+
+.options input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 12px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn:hover {
+  background-color: #357abd;
+}
+
+.register-text {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.register-text a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Estilos para alertas */
+.alert {
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Estilos para la página de verificación */
+.verification-text {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #555;
+  font-size: 14px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  /* For Laptops and larger Tablets */
+  .login-box,
+  .register-box {
+    padding: 25px;
+  }
+
+  h2 {
+    font-size: 1.8em;
+  }
+
+  .input-group {
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* For Tablets and larger Phones */
+  body {
+    padding: 10px; /* Reducir padding para maximizar espacio */
+  }
+
+  .login-box,
+  .register-box {
+    padding: 15px; /* Reducir padding */
+  }
+
+  h2 {
+    font-size: 1.6em;
+  }
+
+  .options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px; /* Add gap for stacked items */
+  }
+
+  .options a {
+    margin-bottom: 0; /* Reset margin */
+  }
+
+  .input-group {
+    margin-bottom: 15px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="file"],
+  select,
+  textarea {
+    padding: 10px;
+    padding-left: 30px; /* Adjust padding for smaller icons */
+    font-size: 14px; /* Mantener un tamaño de fuente legible */
+  }
+
+  .icon {
+    left: 10px; /* Ajustar posición del icono */
+    font-size: 1em; /* Asegurar visibilidad del icono */
+  }
+
+  .btn {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .alert {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* For smaller Phones */
+  body {
+    padding: 5px; /* Ajustar padding del body para pantallas muy pequeñas */
+  }
+
+  .login-box,
+  .register-box {
+    padding: 10px; /* Ajustar padding de las cajas de login/registro */
+  }
+
+  h2 {
+    font-size: 1.3em; /* Ajustar tamaño de los títulos */
+    margin-bottom: 10px;
+  }
+
+  .input-group {
+    margin-bottom: 12px; /* Ajustar margen inferior de los grupos de entrada */
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="file"],
+  select,
+  textarea {
+    padding: 8px; /* Ajustar padding de los campos de entrada */
+    padding-left: 25px;
+    font-size: 13px; /* Mantener un tamaño de fuente legible */
+  }
+
+  .icon {
+    left: 8px; /* Ajustar posición del icono */
+    font-size: 0.9em; /* Ajustar tamaño del icono */
+  }
+
+  .btn {
+    padding: 8px; /* Ajustar padding de los botones */
+    font-size: 15px; /* Mantener un tamaño de fuente legible */
+  }
+
+  .register-text,
+  .verification-text,
+  .link-btn {
+    font-size: 12px; /* Ajustar tamaño de fuente de los textos de registro/verificación */
+  }
+}

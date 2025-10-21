@@ -1,0 +1,335 @@
+/* Enhanced alert styles */
+.alert {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.alert-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  opacity: 0.7;
+}
+
+.alert-close:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+
+.alert-error {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+.alert-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+  color: #0c5460;
+  border-left: 4px solid #17a2b8;
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Field validation styles */
+.field-valid {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2) !important;
+}
+
+.field-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}
+
+.field-validation-message {
+  font-size: 0.875rem;
+  margin-top: 5px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field-validation-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.field-validation-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+/* Enhanced form styling */
+.form-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Document input group styling */
+.document-input-group {
+  display: flex;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden; /* Ensures children respect border-radius */
+}
+
+.document-input-group select,
+.document-input-group input {
+  border: none;
+  padding: 10px;
+  height: 40px; /* Ensure consistent height */
+  box-sizing: border-box; /* Include padding in element's total width and height */
+  -webkit-appearance: none; /* Remove default select arrow on some browsers */
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #fff;
+}
+
+.document-input-group select {
+  flex-shrink: 0; /* Prevent shrinking */
+  width: 60px; /* Fixed width for the prefix dropdown */
+  border-right: 1px solid #ccc; /* Separator line */
+  text-align: center;
+  padding-right: 5px; /* Adjust padding to prevent text from touching arrow */
+}
+
+.document-input-group input {
+  flex-grow: 1; /* Allow input to take remaining space */
+  padding-left: 10px;
+}
+
+/* Remove focus outline from individual elements, as the group has a border */
+.document-input-group select:focus,
+.document-input-group input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Apply focus style to the whole group */
+.form-group .document-input-group:focus-within {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Adjust validation styles for the group */
+.document-input-group.field-valid {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2) !important;
+}
+
+.document-input-group.field-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}
+
+/* Ensure the error message is positioned correctly below the group */
+.document-input-group + .error-message,
+.document-input-group + .field-validation-message {
+  margin-top: 5px;
+  display: block; /* Ensure it takes its own line */
+}
+
+/* Loading state for forms */
+.form-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.form-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #3498db;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* File upload styling */
+.file-upload-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.file-upload-area:hover {
+  border-color: #3498db;
+  background-color: #f8f9fa;
+}
+
+.file-upload-area.dragover {
+  border-color: #28a745;
+  background-color: #d4edda;
+}
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+  /* For Laptops and larger Tablets */
+  .alert {
+    padding: 14px 18px;
+    font-size: 0.925rem;
+  }
+
+  .field-validation-message {
+    font-size: 0.85rem;
+    padding: 4px 9px;
+  }
+
+  .document-input-group select,
+  .document-input-group input {
+    height: 38px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* For Tablets and larger Phones */
+  .alert {
+    padding: 10px 12px; /* Reducir padding */
+    font-size: 0.88rem; /* Ajustar tamaño de fuente */
+  }
+
+  .alert-content {
+    gap: 8px;
+  }
+
+  .field-validation-message {
+    font-size: 0.78rem; /* Ajustar tamaño de fuente */
+    padding: 3px 7px; /* Reducir padding */
+  }
+
+  .document-input-group {
+    flex-direction: column; /* Asegura que se apilen verticalmente */
+    gap: 5px; /* Reducir el espacio entre ellos */
+    padding: 5px; /* Reducir padding del grupo */
+  }
+
+  .document-input-group select,
+  .document-input-group input {
+    width: 100%; /* ¡Importante! Asegura que ambos ocupen todo el ancho */
+    height: 35px; /* Mantener altura consistente */
+    font-size: 0.9em;
+    padding: 8px 10px; /* Ajustar padding */
+  }
+
+  .document-input-group select {
+    width: 100%; /* Sobrescribir cualquier ancho fijo anterior */
+    border-right: none; /* Eliminar borde derecho cuando se apilan */
+    text-align: left; /* Alinear texto a la izquierda */
+  }
+}
+
+@media (max-width: 480px) {
+  /* For smaller Phones */
+  .alert {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .field-validation-message {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+  }
+
+  .document-input-group select,
+  .document-input-group input {
+    height: 30px;
+    font-size: 0.8em;
+    padding: 6px 8px; /* Padding más pequeño */
+  }
+
+  .document-input-group select {
+    width: 100%; /* Asegurar que ocupe todo el ancho */
+  }
+}

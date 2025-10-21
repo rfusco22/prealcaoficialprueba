@@ -1,0 +1,264 @@
+/* Styles for the quotation preview section */
+.quotation-preview-wrapper {
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  max-width: 800px; /* Adjust as needed for preview size */
+  margin: 0 auto; /* Center the preview */
+  padding: 20px; /* Padding around the document */
+}
+
+.quotation-document {
+  font-family: "Arial", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Header with logo and company address */
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.company-info {
+  text-align: left;
+}
+
+.company-info .company-logo {
+  max-width: 150px; /* Adjust logo size as needed */
+  height: auto;
+  margin-bottom: 5px;
+}
+
+.company-info p,
+.address-info p {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.address-info {
+  text-align: right;
+  font-size: 0.9em;
+}
+
+/* Main title and date */
+.quotation-main-title {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #000;
+}
+
+.quotation-date-display {
+  text-align: right;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+}
+
+/* Client and Seller Details */
+.client-seller-details {
+  text-align: left;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns for details */
+  gap: 5px 10px; /* Row and column gap */
+}
+
+.client-seller-details p {
+  margin: 0;
+}
+
+.client-seller-details strong {
+  display: inline-block;
+  width: 70px; /* Align labels */
+}
+
+/* Items Table */
+.quotation-items-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+
+.quotation-items-table th,
+.quotation-items-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.quotation-items-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.quotation-items-table .no-items-message {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+  padding: 20px;
+}
+
+/* Styling for the form's item container for better organization */
+.po-items-container {
+  border: 1px solid #e0e0e0; /* Subtle border to group items */
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9; /* Light background for the section */
+  margin-bottom: 15px; /* Space below the container */
+}
+
+.po-item-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px; /* Increased margin for better separation */
+  align-items: center;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  padding: 10px; /* Added padding to each item row */
+  border: 1px solid #e9e9e9; /* Border for each item row */
+  border-radius: 5px; /* Rounded corners for each item row */
+  background-color: #ffffff; /* White background for each item */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+}
+
+.po-item-row.header-row {
+  font-weight: bold;
+  background-color: #e9e9e9;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border: none; /* No border for header */
+  box-shadow: none; /* No shadow for header */
+}
+
+.po-item-row:last-child {
+  margin-bottom: 0; /* No margin for the last item */
+}
+
+.po-item-row input,
+.po-item-row select,
+.po-item-row span {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.po-item-row .quotation-item-description-display {
+  background-color: #f0f0f0; /* Make readonly field look disabled */
+  cursor: not-allowed;
+}
+
+/* Summary Section (Bank Details and Financial Summary) */
+.quotation-summary-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+  font-size: 0.9em;
+}
+
+.quotation-summary-section .bank-details {
+  flex: 1;
+  padding-right: 20px;
+}
+
+.quotation-summary-section .bank-details p {
+  margin: 2px 0;
+}
+
+.quotation-summary-section .financial-summary {
+  flex: 1;
+  text-align: right;
+}
+
+.quotation-summary-section .financial-summary p {
+  margin: 2px 0;
+}
+
+.quotation-summary-section .financial-summary span {
+  display: inline-block;
+  width: 100px; /* Align currency values */
+  text-align: right;
+  font-weight: bold;
+}
+
+.quotation-summary-section .financial-summary .total-operation {
+  font-size: 1.1em;
+  font-weight: bold;
+  border-top: 1px solid #ccc;
+  padding-top: 5px;
+  margin-top: 5px;
+}
+
+/* Observation */
+.quotation-observation {
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+  font-style: italic;
+  color: #555;
+  font-size: 0.9em;
+}
+
+/* New layout for form and preview */
+.quotation-form-and-preview-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns for form and preview */
+  gap: 30px; /* Space between them */
+  align-items: start; /* Align items to the top */
+}
+
+@media (max-width: 1024px) {
+  .quotation-form-and-preview-layout {
+    grid-template-columns: 1fr; /* Stack vertically on smaller screens */
+  }
+}
+
+/* Responsive adjustments for preview */
+@media (max-width: 600px) {
+  .quotation-preview-wrapper {
+    padding: 10px;
+  }
+
+  .preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .address-info {
+    text-align: left;
+    margin-top: 10px;
+  }
+
+  .client-seller-details {
+    grid-template-columns: 1fr; /* Stack details vertically */
+  }
+
+  .quotation-summary-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quotation-summary-section .bank-details,
+  .quotation-summary-section .financial-summary {
+    padding-right: 0;
+    text-align: left;
+  }
+
+  .quotation-summary-section .financial-summary span {
+    width: auto;
+    text-align: left;
+  }
+}
