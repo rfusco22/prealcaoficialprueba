@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prealca - Registro</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box register-box">
+            <div class="logo">
+                <img src="/static/img/Logo Prealca Sin Fondo.png" alt="Prealca Logo">
+            </div>
+            <h2>Regístrate</h2>
+            
+            <!-- Mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form action="/api/register" method="POST" enctype="multipart/form-data">
+                <div class="input-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+                </div>
+                <div class="input-group">
+                    <label for="apellido">Apellido:</label>
+                    <input type="text" id="apellido" name="apellido" placeholder="Tu apellido" required>
+                </div>
+                <div class="input-group">
+                    <label for="cedula">Cédula:</label>
+                    <input type="text" id="cedula" name="cedula" placeholder="Tu número de cédula" required>
+                </div>
+                <div class="input-group">
+                    <label for="correo">Correo:</label>
+                    <input type="email" id="correo" name="correo" placeholder="Tu correo electrónico" required>
+                </div>
+                <div class="input-group">
+                    <label for="contrasena">Contraseña:</label>
+                    <input type="password" id="contrasena" name="contrasena" placeholder="Crea una contraseña" required>
+                </div>
+                <div class="input-group" style="display: none;">
+                    <label for="rol">Rol:</label>
+                    <select id="rol" name="rol">
+                        <option value="vendedor" selected>Vendedor</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="foto">Foto de Perfil (Opcional):</label>
+                    <input type="file" id="foto" name="foto" accept="image/*">
+                </div>
+                <button type="submit" class="btn">REGISTRARSE</button>
+                <p class="register-text">¿Ya tienes cuenta? <a href="/">Inicia Sesión</a></p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

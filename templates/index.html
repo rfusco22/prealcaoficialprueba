@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prealca - Login</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='uploads/Logo Prealca Sin Fondo.png') }}" alt="Logo de Prealca">
+            </div>
+            <h2>Inicia Sesión</h2>
+            
+            <!-- Mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="username">USUARIO:</label>
+                    <div class="input-field">
+                        <span class="icon">👤</span>
+                        <input type="text" id="username" name="username" placeholder="Nombre de usuario" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="password">CONTRASEÑA:</label>
+                    <div class="input-field">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="password" name="password" placeholder="Contraseña" required>
+                    </div>
+                </div>
+                <div class="options">
+                    <a href="/forgot-password">¿Olvidaste la contraseña?</a>
+                </div>
+                <button type="submit" class="btn" id="login-btn">INICIAR SESIÓN</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/login.js"></script>
+</body>
+</html>

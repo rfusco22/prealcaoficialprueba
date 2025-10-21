@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prealca - Verificación</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <div class="logo">
+                <img src="/static/img/Logo Prealca Sin Fondo.png" alt="Prealca Logo">
+            </div>
+            <h2>Verificación de Correo</h2>
+            <p class="verification-text">Hemos enviado un código de verificación a tu correo electrónico. Por favor, ingrésalo a continuación.</p>
+            
+            <!-- Mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form action="/api/verify" method="POST">
+                <div class="input-group">
+                    <label for="codigo">Código de Verificación:</label>
+                    <div class="input-field">
+                        <span class="icon">🔑</span>
+                        <input type="text" id="codigo" name="codigo" placeholder="Ingresa el código de 6 dígitos" required maxlength="6">
+                    </div>
+                </div>
+                <button type="submit" class="btn">VERIFICAR</button>
+            </form>
+            <form action="/api/resend_code" method="POST" style="margin-top: 15px; text-align: center;">
+                <p>¿No recibiste el código? <button type="submit" class="link-btn">Reenviar código</button></p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

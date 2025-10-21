@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prealca - Panel Administrador</title>
+<link rel="stylesheet" href="/static/css/dashboard.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <div class="user-info">
+        <img id="user-photo" src="{{ usuario.foto if usuario and usuario.foto else '/static/img/user.png' }}" alt="Foto de {{ usuario.nombre if usuario else 'Usuario' }}" onerror="this.onerror=null;this.src='/static/img/user.png';">
+        <h2 id="user-name">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+        <p id="user-role">{{ usuario.rol.capitalize() }}</p>
+    </div>
+    <ul>
+        <li><a href="#" data-page="alerts-material-requests" class="active"><i class="fas fa-exclamation-triangle"></i> Alertas de Solicitudes</a></li>
+        <li><a href="#" data-page="purchase-guide"><i class="fas fa-file-invoice"></i> Generar Guía de Compra</a></li>
+        <li><a href="#" data-page="purchase-orders-list"><i class="fas fa-clipboard-list"></i> Registro de Guías de Compra</a></li>
+        <li><a href="#" data-page="add-user"><i class="fas fa-user-plus"></i> Agregar Usuario</a></li>
+        <li><a href="#" data-page="manage-users"><i class="fas fa-users-cog"></i> Gestionar Usuarios</a></li>
+        <li><a href="#" data-page="material-requests-admin"><i class="fas fa-box-open"></i> Solicitud de Material</a></li>
+        <li><a href="#" data-page="costo-diseno"><i class="fas fa-calculator"></i> Costo X Diseño</a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+    </ul>
+</div>
+
+<div class="content">
+    <div id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div id="purchase-guide" class="page">
+        <h2>Generar Guia de Compra</h2>
+        <div class="purchase-guide-layout">
+            <form id="purchase-guide-form" class="form-grid">
+                <input type="hidden" id="po_order_date_hidden" name="po_order_date">
+                <div class="form-group">
+                    <label for="po_supplier_id">Proveedor:</label>
+                    <select id="po_supplier_id" name="po_supplier_id" required>
+                        <option value="">Seleccione proveedor</option>
+                        </select>
+                </div>
+                <div class="form-group full-width">
+                    <label>Items:</label>
+                    <div id="po_items_container">
+                        <div class="po-item-row">
+                            <select class="po-item-material-select" style="width: 40%;" required>
+                                <option value="">Seleccione material</option>
+                            </select>
+                            <input type="number" class="po-item-quantity" placeholder="Cantidad" min="0.01" step="0.01" style="width: 15%;" required>
+                            <span class="po-item-unit-price-display" style="width: 20%; text-align: right;">P. Unitario: 0.00</span>
+                            <span class="po-item-unit-display" style="width: 10%; text-align: left;">Unidad</span>
+                            <span class="po-item-total" style="width: 10%; text-align: right;">0.00</span>
+                            <button type="button" class="remove-item-btn" style="background: none; border: none; color: red; cursor: pointer; font-size: 1.2em;">&times;</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-item-btn" class="btn-add" style="margin-top: 10px;">Agregar Item</button>
+                </div>
+
+                <div class="form-group full-width totals-section">
+                    <div class="total-row">
+                        <span>TOTAL:</span>
+                        <span id="po_total_to_pay">0.00</span>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <button type="submit">Generar Guia</button>
+                </div>
+            </form>
+            <div id="purchase-guide-preview" class="diseno-info-container" style="margin-top: 0 !important; border: 1px solid #ccc; padding: 20px; background-color: #fff;">
+                <div class="preview-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="company-info" style="text-align: left;">
+                        <img src="/static/uploads/Logo Prealca Sin Fondo.png" alt="Prealca Logo" style="max-width: 300px; height: auto; margin-bottom: 5px;">
+                        <p style="margin: 0; font-size: 0.8em;">RIF.: J-30913171-0</p>
+                    </div>
+                    <div class="address-info" style="text-align: right; font-size: 0.9em;">
+                        <p style="margin: 0;">Av. 2 parcela E-37, Zona Ind. Sta Cruz</p>
+                        <p style="margin: 0;">Estado Aragua</p>
+                        <p style="margin: 0;">Telf: 04128936930 / Roberto Quintero</p>
+                    </div>
+                </div>
+                <h4 style="text-align: center; margin-bottom: 10px;">ORDEN DE COMPRA: <span id="preview_po_number"></span></h4>
+                <p style="text-align: right; margin-bottom: 20px;">Fecha: <span id="preview_po_date"></span></p>
+                
+                <div class="supplier-details" style="text-align: left; margin-bottom: 20px; font-size: 0.9em;">
+                    <p style="margin: 0;"><strong>Proveedor:</strong> <span id="preview_supplier_name"></span></p>
+                    <p style="margin: 0;"><strong>RIF:</strong> <span id="preview_supplier_rif"></span></p>
+                    <p style="margin: 0;"><strong>Dirección:</strong> <span id="preview_supplier_address"></span></p>
+                    <p style="margin: 0;"><strong>Contacto:</strong> <span id="preview_supplier_contact"></span></p>
+                    <p style="margin: 0;"><strong>Teléfono:</strong> <span id="preview_supplier_phone"></span></p>
+                </div>
+
+                <div class="table-container" style="margin-bottom: 20px;">
+                    <table id="preview-items-table" style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                        <thead>
+                            <tr style="background-color: #f2f2f2;">
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Material</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Cantidad</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Unidad</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Precio Unitario</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-items-tbody">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div class="totals-summary" style="text-align: right; font-size: 0.9em;">
+                    <p style="margin: 0; font-weight: bold;">TOTAL: <span id="preview_total_to_pay">0.00</span></p>
+                </div>
+                <p style="text-align: left; margin-top: 20px; font-size: 0.9em;">Son: <span id="preview_total_words"></span></p>
+
+                <button id="download-purchase-pdf" class="btn-add" style="margin-top: 20px; display: none;">Descargar PDF</button>
+                <button id="print-purchase-order" class="btn-add" style="margin-top: 20px; margin-left: 10px; display: none;">Imprimir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="purchase-orders-list" class="page">
+        <h2>Registro de Guías de Compra</h2>
+        <div class="table-container">
+            <table id="purchase-orders-table">
+                <thead>
+                    <tr>
+                        <th>N° GUÍA</th>
+                        <th>FECHA</th>
+                        <th>PROVEEDOR</th>
+                        <th>TOTAL</th>
+                        <th>ESTATUS</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="manage-users" class="page">
+        <h2>Gestionar Usuarios</h2>
+        <div class="search-container" style="margin-bottom: 20px;">
+            <div class="search-input-group">
+                <input type="text" id="search-user-input" placeholder="Buscar usuarios por nombre, apellido, correo, rol o estado..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 300px;">
+                <button id="user-search-button" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; margin-left: 10px; cursor: pointer;">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Usuario</th>
+                        <th>Última Actividad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="material-requests-admin" class="page">
+        <h2>Solicitudes de Material</h2>
+        <div class="table-container">
+            <table id="admin-material-requests-table">
+                <thead>
+                    <tr>
+                        <th>Fecha Solicitud</th>
+                        <th>Solicitante</th>
+                        <th>Material</th>
+                        <th>Cantidad</th>
+                        <th>Unidad</th>
+                        <th>Razón</th>
+                        <th>Estado</th>
+                        <th>Respondido Por</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="alerts-material-requests" class="page active">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">Alertas de Solicitudes Pendientes</h5>
+            </div>
+            <div class="card-body" id="admin-alerts-content">
+                </div>
+        </div>
+    </div>
+
+    <div id="costo-diseno" class="page">
+        <h2>Costo X Diseño</h2>
+        <div class="table-container">
+            <table id="costo-diseno-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Diseño</th>
+                        <th>M3 Disponible</th>
+                        <th>Precio Unitario (Bs/M3)</th>
+                        <th>Valor Total (Bs)</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="totals-section" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+            <h3>Resumen Total</h3>
+            <p><strong>Precio Total de Todos los Diseños: <span id="precio-total-general">Bs 0.00</span></strong></p>
+        </div>
+    </div>
+
+    <div id="add-user" class="page">
+        <h2>Agregar Nuevo Usuario</h2>
+        <form id="add-user-form" action="/api/admin/users" method="POST" class="form-grid" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="user_foto">Foto:</label>
+                <input type="file" id="user_foto" name="foto" accept="image/png, image/jpeg, image/jpg, image/gif">
+                <div id="user_foto_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="user_nombre">Nombre:</label>
+                <input type="text" id="user_nombre" name="nombre" placeholder="Nombre del usuario" required>
+                <div id="user_nombre_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="user_apellido">Apellido:</label>
+                <input type="text" id="user_apellido" name="apellido" placeholder="Apellido del usuario" required>
+                <div id="user_apellido_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="user_documento_prefix">Documento:</label>
+                <div class="document-input-group">
+                    <select id="user_documento_prefix" name="documento_type" required>
+                        <option value="V">V</option>
+                        <option value="E">E</option>
+                    </select>
+                    <input type="text" id="user_documento_number" name="documento_number" placeholder="Número de documento (ej. 12345678)" required pattern="\d{7,8}">
+                </div>
+                <div id="user_documento_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="user_correo">Correo:</label>
+                <input type="email" id="user_correo" name="correo" placeholder="Correo electrónico" required>
+                <div id="user_correo_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="user_contrasena">Contraseña:</label>
+                <input type="password" id="user_contrasena" name="contrasena" placeholder="Contraseña" required autocomplete="new-password" minlength="8">
+                <div id="user_contrasena_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <div class="phone-input-group">
+                    <select id="telefono_prefix" name="telefono_prefix" required>
+                        <option value="0412">0412</option>
+                        <option value="0422">0422</option>
+                        <option value="0426">0426</option>
+                        <option value="0414">0414</option>
+                        <option value="0424">0424</option>
+                    </select>
+                    <input type="tel" id="telefono_number" name="telefono_number" placeholder="1234567" required pattern="[0-9]{7}" maxlength="7">
+                </div>
+                <div id="telefono_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="direccion">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" placeholder="Dirección del usuario" required>
+                <div id="direccion_validation_message" class="field-validation-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="user_rol">Rol:</label>
+                <select id="user_rol" name="rol" required>
+                    <option value="">Seleccione un rol</option>
+                    <option value="administrador">Administrador</option>
+                    <option value="registro">Registro</option>
+                    <option value="control_calidad">Control y Calidad</option>
+                    <option value="vendedor">Vendedor</option>
+                </select>
+            </div>
+            <div class="form-group full-width">
+                <button type="submit">Agregar Usuario</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="user-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="form-title-user">Editar Usuario</h3>
+            <form id="user-form" action="/api/admin/users" method="POST" class="form-grid" enctype="multipart/form-data">
+                <input type="hidden" id="user_id_edit" name="id">
+                <div class="form-group">
+                    <label for="nombre_user_edit">Nombre:</label>
+                    <input type="text" id="nombre_user_edit" name="nombre" placeholder="Ingrese el nombre" required>
+                    <div id="nombre_user_edit_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="apellido_user_edit">Apellido:</label>
+                    <input type="text" id="apellido_user_edit" name="apellido" placeholder="Ingrese el apellido" required>
+                    <div id="apellido_user_edit_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="documento_user_edit_prefix">Documento:</label>
+                    <div class="document-input-group">
+                        <select id="documento_user_edit_prefix" name="documento_type" required>
+                            <option value="V">V</option>
+                            <option value="E">E</option>
+                        </select>
+                        <input type="text" id="documento_user_edit_number" name="documento_number" placeholder="Número de documento (ej. 12345678)" required pattern="\d{7,8}">
+                    </div>
+                    <div id="documento_user_edit_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="correo_user_edit">Correo:</label>
+                    <input type="email" id="correo_user_edit" name="correo" placeholder="Ingrese el correo" required>
+                    <div id="correo_user_edit_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="telefono_user_edit">Teléfono:</label>
+                    <div class="phone-input-group">
+                        <select id="telefono_user_edit_prefix" name="telefono_prefix" required>
+                            <option value="0412">0412</option>
+                            <option value="0422">0422</option>
+                            <option value="0426">0426</option>
+                            <option value="0414">0414</option>
+                            <option value="0424">0424</option>
+                        </select>
+                        <input type="tel" id="telefono_user_edit_number" name="telefono_number" placeholder="1234567" required pattern="[0-9]{7}" maxlength="7">
+                    </div>
+                    <div id="telefono_user_edit_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="direccion_user_edit">Dirección:</label>
+                    <input type="text" id="direccion_user_edit" name="direccion" placeholder="Dirección del usuario" required>
+                    <div id="direccion_user_edit_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label>Foto Actual:</label>
+                    <img id="current_user_photo_preview" src="/static/img/user.jpg" alt="Foto actual" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-top: 5px;">
+                </div>
+                <div class="form-group">
+                    <label for="foto_user_edit">Cambiar Foto:</label>
+                    <input type="file" id="foto_user_edit" name="foto" accept="image/png, image/jpeg, image/jpg, image/gif">
+                    <div id="foto_user_edit_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="rol_user_edit">Rol:</label>
+                    <select id="rol_user_edit" name="rol" required>
+                        <option value="administrador">Administrador</option>
+                        <option value="registro">Registro</option>
+                        <option value="control_calidad">Control y Calidad</option>
+                        <option value="vendedor">Vendedor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status_user_edit">Estado de Cuenta:</label>
+                    <select id="status_user_edit" name="status" required>
+                        <option value="active">Activo</option>
+                        <option value="disabled">Deshabilitado</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <button type="submit">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="modal-mensaje" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="mensaje-texto"></p>
+        <button id="modal-close-btn">Cerrar</button>
+    </div>
+</div>
+
+<div id="purchase-order-details-modal" class="modal">
+    <div class="modal-content" style="max-width: 900px; width: 90%; padding: 0;">
+        <span class="close-po-details-modal">&times;</span>
+        <div id="modal-purchase-order-preview-content" class="diseno-info-container" style="margin-top: 0 !important; border: none; padding: 20px; background-color: #fff;">
+            <div class="preview-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="company-info" style="text-align: left;">
+                    <img src="/static/uploads/Logo Prealca Sin Fondo.png" alt="Prealca Logo" style="max-width: 300px; height: auto; margin-bottom: 5px;">
+                    <p style="margin: 0; font-size: 0.8em;">RIF.: J-30913171-0</p>
+                </div>
+                <div class="address-info" style="text-align: right; font-size: 0.9em;">
+                    <p style="margin: 0;">Av. 2 parcela E-37, Zona Ind. Sta Cruz</p>
+                    <p style="margin: 0;">Estado Aragua</p>
+                    <p style="margin: 0;">Telf: 04128936930 / Roberto Quintero</p>
+                </div>
+            </div>
+            <h4 style="text-align: center; margin-bottom: 10px;">ORDEN DE COMPRA: <span id="modal_preview_po_number"></span></h4>
+            <p style="text-align: right; margin-bottom: 20px;">Fecha: <span id="modal_preview_po_date"></span></p>
+            
+            <div class="client-details" style="text-align: left; margin-bottom: 20px; font-size: 0.9em;">
+                <p style="margin: 0;"><strong>Proveedor:</strong> <span id="modal_preview_client_name"></span></p>
+                <p style="margin: 0;"><strong>Dirección:</strong> <span id="modal_preview_client_address"></span></p>
+                <p style="margin: 0;"><strong>Rif:</strong> <span id="modal_preview_client_rif"></span></p>
+                <p style="margin: 0;"><strong>CONTACTO:</strong> <span id="modal_preview_client_contact"></span></p>
+                <p style="margin: 0;"><strong>TELF:</strong> <span id="modal_preview_client_phone"></span></p>
+            </div>
+
+            <div class="table-container" style="margin-bottom: 20px;">
+                <table id="modal-preview-items-table" style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Material</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Cantidad</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Precio Unitario</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-preview-items-tbody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="totals-summary" style="text-align: right; font-size: 0.9em;">
+                <p style="margin: 0; font-weight: bold;">TOTAL A PAGAR: <span id="modal_preview_total_to_pay">0.00</span></p>
+            </div>
+            <p style="text-align: left; margin-top: 20px; font-size: 0.9em;">Son: <span id="modal_preview_total_words"></span></p>
+
+            <button id="modal-download-purchase-pdf" class="btn-add" style="margin-top: 20px; display: none;">Descargar PDF</button>
+            <button id="modal-print-purchase-order" class="btn-add" style="margin-top: 20px; margin-left: 10px; display: none;">Imprimir</button>
+        </div>
+    </div>
+</div>
+
+<div id="edit-precio-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="close-edit-precio-modal">&times;</span>
+        <h3>Editar Precio Unitario</h3>
+        <form id="edit-precio-form" class="form-grid">
+            <input type="hidden" id="edit_diseno_id" name="diseno_id">
+            <div class="form-group">
+                <label for="edit_diseno_nombre">Diseño:</label>
+                <input type="text" id="edit_diseno_nombre" name="diseno_nombre" readonly>
+            </div>
+            <div class="form-group">
+                <label for="edit_precio_unitario">Precio Unitario (Bs/M3):</label>
+                <input type="number" id="edit_precio_unitario" name="precio_unitario" step="0.01" min="0" required>
+            </div>
+            <div class="form-group full-width">
+                <button type="submit">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    window.userInfo = {
+        id: "{{ usuario.id }}",
+        nombre: "{{ usuario.nombre }}",
+        apellido: "{{ usuario.apellido }}",
+        nombreCompleto: "{{ usuario.nombre }} {{ usuario.apellido }}",
+        rol: "{{ usuario.rol }}",
+        foto: "{{ usuario.foto if usuario and usuario.foto else '/static/img/user.png' }}" // Pass photo path to JS
+    };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+<script src="/static/js/GuiaDeCompra.js"></script>
+<script src="/static/js/dashboard_admin.js"></script>
+</body>
+</html>

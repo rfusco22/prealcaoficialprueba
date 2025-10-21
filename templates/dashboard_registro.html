@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prealca - Panel Registro</title>
+<link rel="stylesheet" href="/static/css/dashboard.css">
+<link rel="stylesheet" href="/static/css/validation.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <div class="user-info">
+        <img id="user-photo" src="{{ usuario.foto if usuario and usuario.foto else '/static/img/user.png' }}" alt="Foto de {{ usuario.nombre if usuario else 'Usuario' }}">
+        <h2 id="user-name">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+        <p id="user-role">{{ usuario.rol | capitalize }}</p>
+    </div>
+    <ul>
+        <li><a href="#" data-page="alertas" class="active"><i class="fas fa-exclamation-triangle"></i> Alertas</a></li>
+        <li><a href="#" data-page="clientes" ><i class="fas fa-users"></i> Clientes</a></li>
+        <li><a href="#" data-page="camiones"><i class="fas fa-truck-moving"></i> Camiones</a></li>
+        <li><a href="#" data-page="choferes"><i class="fas fa-id-card"></i> Choferes</a></li>
+        <li><a href="#" data-page="vendedores"><i class="fas fa-user-tie"></i> Vendedores</a></li>
+        <li><a href="#" data-page="proveedores"><i class="fas fa-industry"></i> Proveedores</a></li>
+        <li><a href="#" data-page="mantenimiento"><i class="fas fa-tools"></i> Mantenimiento</a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+    </ul>
+</div>
+
+<div class="content">
+    <div id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div id="alertas" class="page active">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">Alertas de Vencimientos y Mantenimiento</h5>
+            </div>
+            <div class="card-body" id="registro-alerts-content">
+                </div>
+        </div>
+    </div>
+
+    <div id="clientes" class="page">
+        
+
+        <h2>Clientes Registrados</h2>
+        <div class="table-container">
+            <table id="clientes-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Dirección</th>
+                        <th>Teléfono</th>
+                        <th>Documento</th>
+                        <th>Vendedor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="camiones" class="page">
+        <h2>Registrar Camión</h2>
+        <form action="/api/camiones" method="POST" class="form-grid">
+            <div class="form-group">
+                <label for="marca_camion">Marca:</label>
+                <input type="text" id="marca_camion" name="marca" placeholder="Marca del camión" required>
+            </div>
+            <div class="form-group">
+                <label for="modelo_camion">Modelo:</label>
+                <input type="text" id="modelo_camion" name="modelo" placeholder="Modelo del camión" required>
+            </div>
+            <div class="form-group">
+                <label for="placa_camion">Placa:</label>
+                <input type="text" id="placa_camion" name="placa" placeholder="Placa del camión" required>
+                <span id="placa_camion_error" class="error-message" style="color: red; font-size: 0.8em; display: none;"></span>
+            </div>
+            <div class="form-group">
+                <label for="capacidad_camion">Capacidad (M3):</label>
+                <input type="number" id="capacidad_camion" name="capacidad" step="0.01" placeholder="Capacidad en toneladas" required>
+            </div>
+            <div class="form-group">
+                <label for="estado_camion">Estado:</label>
+                <select id="estado_camion" name="estado">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                </select>
+            </div>
+            <div class="form-group full-width">
+                <button type="submit">Registrar Camión</button>
+            </div>
+        </form>
+
+        <h2>Camiones Registrados</h2>
+        <div class="table-container">
+            <table id="camiones-table">
+                <thead>
+                    <tr>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Placa</th>
+                        <th>Capacidad (M3)</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="page" id="choferes">
+      <h2>Registrar Chofer</h2>
+      <form action="/api/choferes" method="POST" id="main-chofer-form">
+          <div class="form-grid">
+              <div class="form-group">
+                  <label for="nombre_chofer">Nombre:</label>
+                  <input type="text" id="nombre_chofer" name="nombre" placeholder="Nombre del chofer" required>
+              </div>
+              <div class="form-group">
+                  <label for="documento_chofer_type">Documento:</label>
+                  <div class="document-input-group">
+                      <select id="documento_chofer_type" name="documento_type" class="document-prefix-select" required>
+                          <option value="V">V</option>
+                      </select>
+                      <input type="text" id="documento_chofer_number" name="documento_number" placeholder="Número de documento (ej. 12345678)" required>
+                  </div>
+                  <span id="documento_chofer_error" class="error-message" style="display: none;"></span>
+              </div>
+              <div class="form-group">
+                  <label for="telefono_chofer_prefix">Teléfono:</label>
+                  <div class="phone-input-group">
+                      <select id="telefono_chofer_prefix" class="phone-prefix-select" required>
+                          <option value="0412">0412</option>
+                          <option value="0422">0422</option>
+                          <option value="0243">0416</option>
+                          <option value="0426">0426</option>
+                          <option value="0414">0414</option>
+                          <option value="0424">0424</option>
+                      </select>
+                      <input type="tel" id="telefono_chofer_number" class="phone-number-input" placeholder="1234567" required pattern="[0-9]{7}" maxlength="7">
+                  </div>
+              </div>
+                <div class="form-group">
+                    <label for="direccion_chofer">Dirección:</label>
+                    <input type="text" id="direccion_chofer" name="direccion" placeholder="Dirección del chofer" required>
+               </div>
+              <div class="form-group">
+                  <label for="licencia_chofer">Licencia:</label>
+                  <input type="text" id="licencia_chofer" name="licencia" placeholder="Número de licencia" required>
+              </div>
+              <div class="form-group">
+                  <label for="vencimiento_licencia_chofer">Vencimiento Licencia:</label>
+                  <input type="date" id="vencimiento_licencia_chofer" name="vencimientoLicencia" required>
+              </div>
+              <div class="form-group">
+                  <label for="certificado_medico_chofer">Certificado Médico:</label>
+                  <input type="text" id="certificado_medico_chofer" name="certificadoMedico" placeholder="Número de certificado médico">
+              </div>
+              <div class="form-group">
+                  <label for="vencimiento_certificado_chofer">Vencimiento Certificado:</label>
+                  <input type="date" id="vencimiento_certificado_chofer" name="vencimientoCertificado">
+              </div>
+          </div>
+          <button type="submit">Registrar Chofer</button>
+      </form>
+
+      <div class="table-container">
+          <table id="choferes-table">
+              <thead>
+                  <tr>
+                      <th>Nombre</th>
+                      <th>Documento</th>
+                      <th>Teléfono</th>
+                      <th>Dirección</th>
+                      <th>Licencia</th>
+                      <th>Vencimiento Licencia</th>
+                      <th>Certificado Médico</th>
+                      <th>Vencimiento Certificado</th>
+                      <th>Acciones</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  </tbody>
+          </table>
+      </div>
+  </div>
+
+    <div class="page" id="vendedores">
+      <h2>Vendedores</h2>
+      <div class="table-container">
+          <table id="vendedores-table">
+              <thead>
+                  <tr>
+                      <th>Nombre</th>
+                      <th>Documento</th>
+                      <th>Teléfono</th>
+                      <th>Dirección</th>
+                      <th>Correo</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  </tbody>
+          </table>
+      </div>
+  </div>
+
+    <div id="proveedores" class="page">
+        <h2>Registrar Proveedor</h2>
+        <form id="main-proveedor-form" action="/api/proveedores" method="POST" class="form-grid">
+            <div class="form-group">
+                <label for="nombre_proveedor">Nombre:</label>
+                <input type="text" id="nombre_proveedor" name="nombre" placeholder="Nombre del proveedor" required>
+            </div>
+            <div class="form-group">
+                <label for="rif_proveedor_type">RIF:</label>
+                <div class="document-input-group">
+                    <select id="rif_proveedor_type" name="rif_type" class="document-prefix-select" required>
+                        <option value="J">J</option>
+                        <option value="V">V</option>
+                        <option value="G">G</option>
+                        <option value="E">E</option>
+                        <option value="P">P</option>
+                    </select>
+                    <input type="text" id="rif_proveedor_number" name="rif_number" placeholder="Número de RIF (ej. 12345678-9)" required>
+                </div>
+                <span id="rif_proveedor_error" class="error-message" style="color: red; font-size: 0.8em; display: none;"></span>
+            </div>
+            <div class="form-group">
+                <label for="direccion_proveedor">Dirección:</label>
+                <input type="text" id="direccion_proveedor" name="direccion" placeholder="Dirección del proveedor">
+            </div>
+            <div class="form-group">
+                <label for="telefono_proveedor_prefix">Teléfono:</label>
+                <div class="phone-input-group">
+                    <select id="telefono_proveedor_prefix" class="phone-prefix-select">
+                        <option value="0412">0412</option>
+                        <option value="0422">0422</option>
+                        <option value="0426">0426</option>
+                        <option value="0414">0414</option>
+                        <option value="0424">0424</option>
+                    </select>
+                    <input type="tel" id="telefono_proveedor_number" class="phone-number-input" placeholder="1234567" pattern="[0-9]{7}" maxlength="7">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email_proveedor">Email:</label>
+                <input type="email" id="email_proveedor" name="email" placeholder="Email del proveedor">
+            </div>
+            <div class="form-group">
+                <label for="nombre_contacto_proveedor">Nombre de Contacto:</label>
+                <input type="text" id="nombre_contacto_proveedor" name="nombre_contacto" placeholder="Nombre de la persona de contacto">
+            </div>
+            <div class="form-group">
+                <label for="telefono_contacto_proveedor_prefix">Teléfono de Contacto:</label>
+                <div class="phone-input-group">
+                    <select id="telefono_contacto_proveedor_prefix" class="phone-prefix-select">
+                          <option value="0412">0412</option>
+                          <option value="0422">0422</option>
+                          <option value="0243">0416</option>
+                          <option value="0426">0426</option>
+                          <option value="0414">0414</option>
+                          <option value="0424">0424</option>
+                    </select>
+                    <input type="tel" id="telefono_contacto_proveedor_number" class="phone-number-input" placeholder="1234567" pattern="[0-9]{7}" maxlength="7">
+                </div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label>Materiales que ofrece:</label>
+                <div id="materiales-container">
+                    <div class="material-row">
+                        <input type="text" class="nombre-material" placeholder="Nombre Material" style="width: 35%;" required>
+                        <input type="number" class="precio-material" step="0.01" placeholder="Precio" style="width: 25%;" required>
+                        <select class="unidad-medida-material" style="width: 25%;" required>
+                            <option value="">Unidad</option>
+                            <option value="toneladas">Toneladas</option>
+                            <option value="M3">M3</option>
+                            <option value="litros">Litros</option>
+                            <option value="unidad">Unidad</option>
+                            <option value="saco">Saco</option>
+                        </select>
+                        <button type="button" class="remove-material-btn" style="width: 10%; background: none; border: none; color: red; cursor: pointer; font-size: 1.2em;">&times;</button>
+                    </div>
+                </div>
+                <button type="button" id="add-material-btn" class="btn-add" style="margin-top: 10px;">Agregar Material</button>
+            </div>
+
+            <div class="form-group full-width">
+                <button type="submit">Registrar Proveedor</button>
+            </div>
+        </form>
+
+        <h2>Proveedores Registrados</h2>
+        <div class="table-container">
+            <table id="proveedores-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>RIF</th>
+                        <th>Dirección</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Nombre Contacto</th> <th>Teléfono Contacto</th> <th>Materiales</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="mantenimiento" class="page">
+        <h2>Registrar Mantenimiento</h2>
+        <form action="/api/mantenimiento" method="POST" class="form-grid">
+            <div class="form-group">
+                <label for="camion_mantenimiento">Camión:</label>
+                <select id="camion_mantenimiento" name="camion_id" required> <option value="">Seleccione camión</option>
+                    </select>
+            </div>
+            <div class="form-group">
+                <label for="fecha_mantenimiento">Fecha:</label>
+                <input type="date" id="fecha_mantenimiento" name="fecha" required>
+            </div>
+            <div class="form-group">
+                <label for="tipo_mantenimiento">Tipo de Mantenimiento:</label>
+                <select id="tipo_mantenimiento" name="tipo_mantenimiento" required>
+                    <option value="">Seleccione tipo</option>
+                    <option value="Cambio de Aceite">Cambio de Aceite</option>
+                    <option value="Revisión General">Revisión General</option>
+                    <option value="Frenos">Frenos</option>
+                    <option value="Neumáticos">Neumáticos</option>
+                    <option value="Inspección de Fluidos">Inspección de Fluidos</option>
+                    <option value="Reemplazo de Filtros">Reemplazo de Filtros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="kilometraje_actual">Kilometraje Actual:</label>
+                <input type="number" id="kilometraje_actual" name="kilometraje_actual" placeholder="Kilometraje actual del camión" required>
+            </div>
+            <div class="form-group full-width">
+                <label for="descripcion_mantenimiento">Descripción:</label>
+                <textarea id="descripcion_mantenimiento" name="descripcion" placeholder="Descripción del mantenimiento" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="costo_mantenimiento">Costo:</label>
+                <input type="number" id="costo_mantenimiento" name="costo" step="0.01" placeholder="Costo del mantenimiento" required>
+            </div>
+            <div class="form-group full-width">
+                <button type="submit">Registrar Mantenimiento</button>
+            </div>
+        </form>
+
+        <h2>Mantenimientos Registrados</h2>
+        <div class="table-container">
+            <table id="mantenimiento-table">
+                <thead>
+                    <tr>
+                        <th>Camión</th>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Kilometraje Actual</th>
+                        <th>Próximo Kilometraje</th>
+                        <th>Próxima Fecha</th>
+                        <th>Descripción</th>
+                        <th>Costo</th>
+                        <th>Acciones</th> </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+<div id="camion-form-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="form-title-camion">Editar Camión</h3>
+        <form id="camion-form" action="" method="POST" class="form-grid">
+            <input type="hidden" id="camion_id_edit" name="id">
+            <div class="form-group">
+                <label for="marca_camion_edit">Marca:</label>
+                <input type="text" id="marca_camion_edit" name="marca" required>
+            </div>
+            <div class="form-group">
+                <label for="modelo_camion_edit">Modelo:</label>
+                <input type="text" id="modelo_camion_edit" name="modelo" required>
+            </div>
+            <div class="form-group">
+                <label for="placa_camion_edit">Placa:</label>
+                <input type="text" id="placa_camion_edit" name="placa" required>
+                <span id="placa_camion_edit_error" class="error-message" style="color: red; font-size: 0.8em; display: none;"></span>
+            </div>
+            <div class="form-group">
+                <label for="capacidad_camion_edit">Capacidad (M3):</label>
+                <input type="number" id="capacidad_camion_edit" name="capacidad" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="estado_camion_edit">Estado:</label>
+                <select id="estado_camion_edit" name="estado">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                </select>
+            </div>
+            <div class="form-group full-width">
+                <button type="submit">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="chofer-form-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="form-title-chofer">Editar Chofer</h3>
+        <form id="chofer-form" action="" method="POST" class="form-grid">
+            <input type="hidden" id="chofer_id_edit" name="id">
+            <div class="form-group">
+                <label for="nombre_chofer_edit">Nombre:</label>
+                <input type="text" id="nombre_chofer_edit" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="documento_chofer_edit_type">Documento:</label>
+                <div class="document-input-group">
+                    <select id="documento_chofer_edit_type" name="documento_type" class="document-prefix-select" required>
+                        <option value="V">V</option>
+                    </select>
+                    <input type="text" id="documento_chofer_edit_number" name="documento_number" placeholder="Número de documento (ej. 12345678)" required>
+                </div>
+                <span id="documento_chofer_edit_error" class="error-message" style="color: red; font-size: 0.8em; display: none;"></span>
+            </div>
+            <div class="form-group">
+                <label for="telefono_chofer_edit_prefix">Teléfono:</label>
+                <div class="phone-input-group">
+                    <select id="telefono_chofer_edit_prefix" class="phone-prefix-select" required>
+                          <option value="0412">0412</option>
+                          <option value="0422">0422</option>
+                          <option value="0243">0416</option>
+                          <option value="0426">0426</option>
+                          <option value="0414">0414</option>
+                          <option value="0424">0424</option>
+                    </select>
+                    <input type="tel" id="telefono_chofer_edit_number" class="phone-number-input" placeholder="1234567" required pattern="[0-9]{7}" maxlength="7">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="direccion_chofer_edit">Dirección:</label>
+                <input type="text" id="direccion_chofer_edit" name="direccion" required>
+            </div>
+            <div class="form-group">
+                <label for="licencia_chofer_edit">Licencia:</label>
+                <input type="text" id="licencia_chofer_edit" name="licencia" required>
+            </div>
+            <div class="form-group">
+                <label for="vencimiento_licencia_chofer_edit">Vencimiento Licencia:</label>
+                <input type="date" id="vencimiento_licencia_chofer_edit" name="vencimientoLicencia" required>
+            </div>
+            <div class="form-group">
+                <label for="certificado_medico_chofer_edit">Certificado Médico:</label>
+                <input type="text" id="certificado_medico_chofer_edit" name="certificadoMedico">
+            </div>
+            <div class="form-group">
+                <label for="vencimiento_certificado_chofer_edit">Vencimiento Certificado:</label>
+                <input type="date" id="vencimiento_certificado_chofer_edit" name="vencimientoCertificado">
+            </div>
+            <div class="form-group full-width">
+                <button type="submit">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="vendedor-form-modal" class="modal">
+      <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3 id="form-title-vendedor">Editar Vendedor</h3>
+          <form id="vendedor-form" action="" method="POST">
+              <input type="hidden" id="vendedor_id_edit" name="id">
+              <div class="form-grid">
+                  <div class="form-group">
+                      <label for="nombre_vendedor_edit">Nombre:</label>
+                      <input type="text" id="nombre_vendedor_edit" name="nombre" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="documento_vendedor_edit_type">Documento:</label>
+                      <div class="document-input-group">
+                          <select id="documento_vendedor_edit_type" name="documento_type" class="document-prefix-select" required>
+                              <option value="V">V</option>
+                              <option value="J">J</option>
+                          </select>
+                          <input type="text" id="documento_vendedor_edit_number" name="documento_number" placeholder="Número de documento (ej. 12345678)" required>
+                      </div>
+                      <span id="documento_vendedor_edit_error" class="error-message" style="display: none;"></span>
+                  </div>
+                  <div class="form-group">
+                      <label for="telefono_vendedor_edit">Teléfono:</label>
+                      <input type="tel" id="telefono_vendedor_edit" name="telefono" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="direccion_vendedor_edit">Dirección:</label>
+                      <input type="text" id="direccion_vendedor_edit" name="direccion" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="correo_vendedor_edit">Correo:</label>
+                      <input type="email" id="correo_vendedor_edit" name="correo" required>
+                  </div>
+              </div>
+              <button type="submit">Guardar Cambios</button>
+          </form>
+      </div>
+  </div>
+
+<div id="proveedor-form-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="form-title-proveedor">Editar Proveedor</h3>
+        <form id="proveedor-form" action="" method="POST" class="form-grid">
+            <input type="hidden" id="proveedor_id_edit" name="id">
+            <div class="form-group">
+                <label for="nombre_proveedor_edit">Nombre:</label>
+                <input type="text" id="nombre_proveedor_edit" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="rif_proveedor_edit_type">RIF:</label>
+                <div class="document-input-group">
+                    <select id="rif_proveedor_edit_type" name="rif_type" class="document-prefix-select" required>
+                        <option value="J">J</option>
+                        <option value="V">V</option>
+                        <option value="G">G</option>
+                        <option value="E">E</option>
+                        <option value="P">P</option>
+                    </select>
+                    <input type="text" id="rif_proveedor_edit_number" name="rif_number" placeholder="Número de RIF (ej. 12345678-9)" required>
+                </div>
+                <span id="rif_proveedor_edit_error" class="error-message" style="color: red; font-size: 0.8em; display: none;"></span>
+            </div>
+            <div class="form-group">
+                <label for="direccion_proveedor_edit">Dirección:</label>
+                <input type="text" id="direccion_proveedor_edit" name="direccion">
+            </div>
+            <div class="form-group">
+                <label for="telefono_proveedor_edit_prefix">Teléfono:</label>
+                <div class="phone-input-group">
+                    <select id="telefono_proveedor_edit_prefix" class="phone-prefix-select">
+                        <option value="0412">0412</option>
+                        <option value="0422">0422</option>
+                        <option value="0243">0416</option>
+                        <option value="0426">0426</option>
+                        <option value="0414">0414</option>
+                        <option value="0424">0424</option>
+                    </select>
+                    <input type="tel" id="telefono_proveedor_edit_number" class="phone-number-input" placeholder="1234567" pattern="[0-9]{7}" maxlength="7">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email_proveedor_edit">Email:</label>
+                <input type="email" id="email_proveedor_edit" name="email">
+            </div>
+            <div class="form-group">
+                <label for="nombre_contacto_proveedor_edit">Nombre de Contacto:</label>
+                <input type="text" id="nombre_contacto_proveedor_edit" name="nombre_contacto" placeholder="Nombre de la persona de contacto">
+            </div>
+            <div class="form-group">
+                <label for="telefono_contacto_proveedor_edit_prefix">Teléfono de Contacto:</label>
+                <div class="phone-input-group">
+                    <select id="telefono_contacto_proveedor_edit_prefix" class="phone-prefix-select">
+                          <option value="0412">0412</option>
+                          <option value="0422">0422</option>
+                          <option value="0243">0416</option>
+                          <option value="0426">0426</option>
+                          <option value="0414">0414</option>
+                          <option value="0424">0424</option>
+                    </select>
+                    <input type="tel" id="telefono_contacto_proveedor_edit_number" class="phone-number-input" placeholder="1234567" pattern="[0-9]{7}" maxlength="7">
+                </div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label>Materiales que ofrece:</label>
+                <div id="materiales-edit-container">
+                    </div>
+                <button type="button" id="add-material-edit-btn" class="btn-add" style="margin-top: 10px;">Agregar Material</button>
+            </div>
+
+            <div class="form-group full-width">
+                <button type="submit">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="mantenimiento-form-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="form-title-mantenimiento">Editar Mantenimiento</h3>
+        <form id="mantenimiento-form" action="" method="POST" class="form-grid">
+            <input type="hidden" id="mantenimiento_id_edit" name="id">
+            <div class="form-group">
+                <label for="camion_mantenimiento_edit">Camión:</label>
+                <select id="camion_mantenimiento_edit" name="camion_id" required>
+                    </select>
+            </div>
+            <div class="form-group">
+                <label for="fecha_mantenimiento_edit">Fecha:</label>
+                <input type="date" id="fecha_mantenimiento_edit" name="fecha" required>
+            </div>
+            <div class="form-group">
+                <label for="tipo_mantenimiento_edit">Tipo de Mantenimiento:</label>
+                <select id="tipo_mantenimiento_edit" name="tipo_mantenimiento" required>
+                    <option value="">Seleccione tipo</option>
+                    <option value="Cambio de Aceite">Cambio de Aceite</option>
+                    <option value="Revisión General">Revisión General</option>
+                    <option value="Frenos">Frenos</option>
+                    <option value="Neumáticos">Neumáticos</option>
+                    <option value="Inspección de Fluidos">Inspección de Fluidos</option>
+                    <option value="Reemplazo de Filtros">Reemplazo de Filtros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="kilometraje_actual_edit">Kilometraje Actual:</label>
+                <input type="number" id="kilometraje_actual_edit" name="kilometraje_actual" required>
+            </div>
+            <div class="form-group">
+                <label for="proximo_kilometraje_mantenimiento_edit">Próximo Kilometraje:</label>
+                <input type="number" id="proximo_kilometraje_mantenimiento_edit" name="proximo_kilometraje_mantenimiento" readonly>
+            </div>
+            <div class="form-group">
+                <label for="proxima_fecha_mantenimiento_edit">Próxima Fecha:</label>
+                <input type="date" id="proxima_fecha_mantenimiento_edit" name="proxima_fecha_mantenimiento" readonly>
+            </div>
+            <div class="form-group full-width">
+                <label for="descripcion_mantenimiento_edit">Descripción:</label>
+                <textarea id="descripcion_mantenimiento_edit" name="descripcion" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="costo_mantenimiento_edit">Costo:</label>
+                <input type="number" id="costo_mantenimiento_edit" name="costo" step="0.01" required>
+            </div>
+            <div class="form-group full-width">
+                <button type="submit">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-mensaje" class="modal">
+  <div class="modal-content">
+      <span class="close">&times;</span>
+      <p id="mensaje-texto"></p>
+      <button id="modal-close-btn">Cerrar</button>
+  </div>
+</div>
+
+<script>
+    window.userInfo = {
+        id: "{{ usuario.id }}",
+        nombre: "{{ usuario.nombre }}",
+        apellido: "{{ usuario.apellido }}",
+        nombreCompleto: "{{ usuario.nombre }} {{ usuario.apellido }}",
+        rol: "{{ usuario.rol }}"
+    };
+</script>
+  <script src="/static/js/dashboard_registro.js"></script>
+  <script src="/static/js/validation.js"></script>
+</body>
+</html>

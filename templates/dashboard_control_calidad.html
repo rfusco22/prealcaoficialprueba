@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prealca - Panel Control y Calidad</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/validation.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="user-info">
+            <img id="user-photo" src="{{ usuario.foto if usuario.foto else '/static/img/user.png' }}" alt="Foto de {{ usuario.nombre }}">
+            <h2 id="user-name">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+            <p id="user-role">Control y Calidad</p>
+        </div>
+        <ul>
+            <li><a href="#" data-page="alertas" class="active"><i class="fas fa-bell"></i> Alertas</a></li>
+            <li><a href="#" data-page="inventario"><i class="fas fa-boxes"></i> Inventario</a></li>
+            <li><a href="#" data-page="inventario-x-diseno"><i class="fas fa-cubes"></i> Inventario X Diseno</a></li>
+            <li><a href="#" data-page="diseno-concreto"><i class="fas fa-flask"></i> Diseño de Concreto</a></li>
+            <li><a href="#" data-page="generar-guia-despacho"><i class="fas fa-truck"></i> Generar Guía de Despacho</a></li>
+            <li><a href="#" data-page="registro-guias-despacho"><i class="fas fa-clipboard-list"></i> Registro de Guías de Despacho</a></li>
+            <li><a href="#" data-page="material-requests"><i class="fas fa-box-open"></i> Solicitar Material</a></li>
+            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <div id="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div id="alertas" class="page active">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">Alertas de Inventario por Diseño</h5>
+                </div>
+                <div class="card-body" id="calidad-alerts-content">
+                    </div>
+            </div>
+        </div>
+
+        <div id="inventario" class="page">
+            <h2>Gestión de Inventario</h2>
+            <div class="inventory-actions">
+                <button id="add-item-btn" class="btn-add">Agregar Nuevo Item</button>
+                <button id="add-quantity-btn" class="btn-add">Agregar Cantidad a Material Existente</button>
+            </div>
+            
+            <div id="item-form" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3 id="form-title">Agregar Item</h3>
+                    <form id="inventario-form" action="/api/inventario" method="POST">
+                        <input type="hidden" id="item_id" name="id">
+                        <div class="form-group">
+                            <label for="nombre_item">Material:</label>
+                            <input type="text" id="nombre_item" name="nombre" required placeholder="Ej: Cemento, Arena">
+                        </div>
+                        <div class="form-group">
+                            <label for="unidad">Unidad de Medida:</label>
+                            <input type="text" id="unidad" name="unidad" required placeholder="Ej: toneladas, M3, litro">
+                        </div>
+                        <div class="form-group">
+                            <label for="cantidad">Cantidad:</label>
+                            <input type="number" id="cantidad" name="cantidad" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="densidad">Densidad (kg/unidad_inventario):</label>
+                            <input type="number" id="densidad" name="densidad" step="0.001" placeholder="Ej: 1600 para Arena en M3">
+                        </div>
+                        <div class="form-group full-width">
+                            <button type="submit">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="add-quantity-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3>Agregar Cantidad a Material Existente</h3>
+                    <form id="add-quantity-form" action="/api/inventario" method="POST">
+                        <div class="form-group">
+                            <label for="existing_material_select">Seleccionar Material:</label>
+                            <select id="existing_material_select" name="nombre" required>
+                                <option value="">Cargando materiales...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="add_quantity_amount">Cantidad a Añadir:</label>
+                            <input type="number" id="add_quantity_amount" name="cantidad" required min="0.001" step="0.001">
+                        </div>
+                        <div class="form-group">
+                            <label for="add_quantity_unit">Unidad de Medida:</label>
+                            <input type="text" id="add_quantity_unit" name="unidad" readonly required>
+                        </div>
+                        <div class="form-group full-width">
+                            <button type="submit">Añadir Cantidad</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="inventario-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="inventario-x-diseno" class="page">
+            <h2>Inventario X Diseno</h2>
+            <p class="threshold-info">Estado: <span class="estado-disponible">Disponible</span> (>200m³), <span class="estado-limitado">Limitado</span> (1-200m³), <span class="estado-agotado">Agotado</span> (0m³)</p>
+            <div class="table-container">
+                <table id="disenos-table">
+                    <thead>
+                        <tr>
+                            <th>Diseño</th>
+                            <th>M³ Disponibles</th>
+                            <th>Material Limitante</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="diseno-concreto" class="page">
+            <h2>Gestión de Diseños de Concreto</h2>
+            <button id="add-design-btn" class="btn-add">Agregar Nuevo Diseño</button>
+
+            <div class="table-container">
+                <table id="concrete-designs-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Resistencia (kgf/cm²)</th>
+                            <th>Asentamiento (")</th>
+                            <th>Materiales</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="design-form-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3 id="design-form-title">Agregar Diseño de Concreto</h3>
+                    <form id="concrete-design-form" action="/api/concrete_designs" method="POST">
+                        <input type="hidden" id="design_id" name="id">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="design_nombre">Nombre del Diseño:</label>
+                                <input type="text" id="design_nombre" name="nombre" required placeholder="Ej: 210 kgf/cm² - 5&quot;">
+                            </div>
+                            <div class="form-group">
+                                <label for="design_resistencia">Resistencia (kgf/cm²):</label>
+                                <input type="number" id="design_resistencia" name="resistencia" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="design_asentamiento">Asentamiento ("):</label>
+                                <input type="number" id="design_asentamiento" name="asentamiento" required>
+                            </div>
+                        </div>
+
+                        <h3>Materiales por m³ de Concreto</h3>
+                        <div id="design-materials-container">
+                            </div>
+                        <button type="button" id="add-material-row-btn" class="btn-add" style="margin-top: 15px;">Agregar Material</button>
+
+                        <div class="form-group full-width" style="margin-top: 20px;">
+                            <button type="submit">Guardar Diseño</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="material-requests" class="page">
+            <h2>Solicitar Material</h2>
+            <div id="flash-messages"></div> <form id="material-request-form" action="/api/material_requests" method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="request_material_name">Material:</label>
+                        <select id="request_material_name" name="material_name" required>
+                            <option value="">Seleccione material</option>
+                            </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="request_quantity">Cantidad Solicitada:</label>
+                        <input type="number" id="request_quantity" name="quantity_requested" min="0.01" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="request_unit">Unidad de Medida:</label>
+                        <input type="text" id="request_unit" name="unit" readonly required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="request_reason">Razón de la Solicitud:</label>
+                        <textarea id="request_reason" name="reason" rows="3" placeholder="Ej: Bajo stock, proyecto nuevo, etc."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <button type="submit">Enviar Solicitud</button>
+                    </div>
+                </div>
+            </form>
+
+            <h2 style="margin-top: 40px;">Historial de Solicitudes de Material</h2>
+            <div class="table-container">
+                <table id="material-requests-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Material</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Razón</th>
+                            <th>Estado</th>
+                            <th>Respondido Por</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="generar-guia-despacho" class="page">
+            <h2>Generar Guía de Despacho</h2>
+            <div class="hola">
+                <form id="despacho-form" action="/api/despachos" method="POST" class="form-grid2">
+                    <div class="form-group">
+                        <label for="fecha_display">Fecha:</label>
+                        <span id="fecha_display" class="form-control-static"></span>
+                        <input type="hidden" id="fecha_hidden" name="fecha">
+                    </div>
+                    <div class="form-group">
+                        <label for="cliente">Cliente:</label>
+                        <select id="cliente" name="cliente" required>
+                            <option value="">Seleccione cliente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="m3">M3:</label>
+                        <input type="number" id="m3" name="m3" placeholder="Ingrese los M3" step="0.01" min="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="diseno">Diseño:</label>
+                        <select id="diseno" name="diseno" required>
+                            <option value="">Seleccione diseño</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="chofer">Chofer:</label>
+                        <select id="chofer" name="chofer" required>
+                            <option value="">Seleccione chofer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="camion">Camión:</label>
+                        <select id="camion" name="camion" required>
+                            <option value="">Seleccione camión</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vendedor">Vendedor:</label>
+                        <select id="vendedor" name="vendedor" required>
+                            <option value="">Seleccione vendedor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <button type="submit">Generar Guía</button>
+                    </div>
+                </form>
+
+                <div id="dispatch-guide-preview" class="hola1" style="margin-top: 0 !important; border: 1px solid #ccc; padding: 20px; background-color: #fff;">
+                    <div class="preview-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div class="company-info" style="text-align: left;">
+                            <img src="/static/uploads/Logo Prealca Sin Fondo.png" alt="Prealca Logo" style="max-width: 300px; height: auto; margin-bottom: 5px;">
+                            <p style="margin: 0; font-size: 0.8em;">RIF.: J-30913171-0</p>
+                        </div>
+                        <div class="address-info" style="text-align: right; font-size: 0.9em;">
+                            <p style="margin: 0;">Av. 2 parcela E-37, Zona Ind. Sta Cruz</p>
+                            <p style="margin: 0;">Estado Aragua</p>
+                            <p style="margin: 0;">Telf: 04128936930 / Roberto Quintero</p>
+                        </div>
+                    </div>
+                    <h4 style="text-align: center; margin-bottom: 10px;">GUÍA DE DESPACHO: <span id="preview_guia_number">N/A</span></h4>
+                    <p style="text-align: right; margin-bottom: 20px;">Fecha: <span id="preview_dispatch_date">N/A</span></p>
+                    
+                    <div class="dispatch-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 0.9em;">
+                        <p style="margin: 0;"><strong>Cliente:</strong> <span id="preview_client_name">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Dirección:</strong> <span id="preview_client_address">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Teléfono:</strong> <span id="preview_client_phone">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>RIF/Cédula:</strong> <span id="preview_client_document">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Chofer:</strong> <span id="preview_chofer_name">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Vendedor:</strong> <span id="preview_vendedor_name">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Camión:</strong> <span id="preview_camion_info">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>M3:</strong> <span id="preview_m3">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Diseño:</strong> <span id="preview_diseno_name">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Estado:</strong> <span id="preview_dispatch_status">Pendiente</span></p>
+                        <p style="margin: 0;"><strong>Hora de Salida:</strong> <span id="preview_hora_salida">N/A</span></p>
+                        <p style="margin: 0;"><strong>Hora de Llegada:</strong> <span id="preview_hora_llegada">N/A</span></p>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px dashed #ccc; margin: 20px 0;">
+
+                    <div class="received-by-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                        <p style="margin: 0;"><strong>RECIBIDO POR:</strong></p>
+                        <p style="margin: 0;"><strong>Firma:</strong> <span id="preview_received_signature">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Nombre:</strong> <span id="preview_received_name">SIN RELLENAR</span></p>
+                        <p style="margin: 0;"><strong>Fecha y Hora:</strong> <span id="preview_received_datetime">SIN RELLENAR</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="registro-guias-despacho" class="page">
+            <h2>Registro de Guías de Despacho</h2>
+            <div class="table-container">
+                <table id="despachos-registro-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>N° Guía</th>
+                            <th>M3</th>
+                            <th>Diseño</th>
+                            <th>Cliente</th>
+                            <th>Chofer</th>
+                            <th>Camión</th>
+                            <th>Vendedor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-mensaje" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="mensaje-texto"></p>
+            <button id="modal-close-btn">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        // Pasar datos del usuario al JavaScript
+        window.userInfo = {
+            id: "{{ usuario.id }}",
+            nombre: "{{ usuario.nombre }}",
+            apellido: "{{ usuario.apellido }}",
+            nombreCompleto: "{{ usuario.nombre }} {{ usuario.apellido }}",
+            rol: "{{ usuario.rol }}"
+        };
+    </script>
+    <script src="/static/js/dashboard_control_calidad.js"></script>
+</body>
+</html>

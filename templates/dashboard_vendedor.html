@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prealca - Panel Vendedor</title>
+<link rel="stylesheet" href="/static/css/dashboard.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="/static/css/validation.css">
+<link rel="stylesheet" href="/static/css/quotation-preview.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="user-info">
+    <img id="user-photo" src="{{ usuario.foto if usuario and usuario.foto else '/static/uploads/user.png' }}" alt="Foto de {{ usuario.nombre if usuario else 'Usuario' }}">
+    <h2 id="user-name">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+    <p id="user-role">Vendedor</p>
+</div>
+<ul>
+    <li><a href="#" data-page="clientes" class="active"><i class="fas fa-user-friends"></i> Clientes</a></li>
+    <li><a href="#" data-page="cotizaciones"><i class="fas fa-file-invoice-dollar"></i> Cotizaciones</a></li>
+    <li><a href="#" data-page="registro-cotizaciones"><i class="fas fa-clipboard-list"></i> Registro de Cotización</a></li>
+    <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+</ul>
+</div>
+
+<div class="content">
+<div id="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<div id="clientes" class="page active">
+    <h2>Registrar Cliente</h2>
+    <form action="/api/clientes" method="POST" class="form-grid" id="add-client-form-vendedor">
+        <div class="form-group">
+            <label for="nombre_cliente_vendedor">Nombre:</label>
+            <input type="text" id="nombre_cliente_vendedor" name="nombre" placeholder="Nombre del cliente" required>
+            <div id="nombre_cliente_vendedor_validation_message" class="field-validation-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="direccion_cliente_vendedor">Dirección:</label>
+            <input type="text" id="direccion_cliente_vendedor" name="direccion" placeholder="Dirección del cliente" required>
+            <div id="direccion_cliente_vendedor_validation_message" class="field-validation-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="telefono_cliente_vendedor_prefix">Teléfono:</label>
+            <div class="phone-input-group">
+                <select id="telefono_cliente_vendedor_prefix" class="phone-prefix-select" required>
+                    <option value="0412">0412</option>
+                    <option value="0422">0422</option>
+                    <option value="0416">0416</option>
+                    <option value="0426">0426</option>
+                    <option value="0414">0414</option>
+                    <option value="0424">0424</option>
+                </select>
+                <input type="tel" id="telefono_cliente_vendedor_number" class="phone-number-input" placeholder="1234567" required pattern="[0-9]{7}" maxlength="7">
+            </div>
+            <div id="telefono_cliente_vendedor_validation_message" class="field-validation-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="documento_cliente_vendedor_type">Documento:</label>
+            <div class="document-input-group">
+                <select id="documento_cliente_vendedor_type" name="documento_type" class="document-prefix-select" required>
+                    <option value="V">V</option>
+                    <option value="J">J</option>
+                </select>
+                <input type="text" id="documento_cliente_vendedor_number" name="documento_number" placeholder="Número de documento (ej. 12345678)" required>
+            </div>
+            <div id="documento_cliente_vendedor_validation_message" class="field-validation-message"></div>
+        </div>
+        <input type="hidden" id="vendedor_cliente_vendedor" name="vendedor">
+        <div class="form-group full-width">
+            <button type="submit">Registrar Cliente</button>
+        </div>
+    </form>
+
+    <h2>Clientes Registrados</h2>
+    <div class="table-container">
+        <table id="clientes-table-vendedor">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Documento</th>
+                    <th>Vendedor</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div id="edit-client-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-edit-client-modal">&times;</span>
+            <h3>Editar Cliente</h3>
+            <form action="/api/clientes/" method="POST" class="form-grid" id="edit-client-form">
+                <input type="hidden" id="edit_client_id" name="id">
+                <div class="form-group">
+                    <label for="edit_nombre_cliente">Nombre:</label>
+                    <input type="text" id="edit_nombre_cliente" name="nombre" placeholder="Nombre del cliente" required>
+                    <div id="edit_nombre_cliente_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="edit_direccion_cliente">Dirección:</label>
+                    <input type="text" id="edit_direccion_cliente" name="direccion" placeholder="Dirección del cliente" required>
+                    <div id="edit_direccion_cliente_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="edit_telefono_cliente_prefix">Teléfono:</label>
+                    <div class="phone-input-group">
+                        <select id="edit_telefono_cliente_prefix" class="phone-prefix-select" required>
+                            <option value="0412">0412</option>
+                            <option value="0422">0422</option>
+                            <option value="0416">0416</option>
+                            <option value="0426">0426</option>
+                            <option value="0414">0414</option>
+                            <option value="0424">0424</option>
+                        </select>
+                        <input type="tel" id="edit_telefono_cliente_number" class="phone-number-input" placeholder="1234567" required pattern="[0-9]{7}" maxlength="7">
+                    </div>
+                    <div id="edit_telefono_cliente_validation_message" class="field-validation-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="edit_documento_cliente_type">Documento:</label>
+                    <div class="document-input-group">
+                        <select id="edit_documento_cliente_type" name="documento_type" class="document-prefix-select" required>
+                            <option value="V">V</option>
+                            <option value="J">J</option>
+                            <option value="G">G</option>
+                            <option value="E">E</option>
+                            <option value="P">P</option>
+                        </select>
+                        <input type="text" id="edit_documento_cliente_number" name="documento_number" placeholder="Número de documento (ej. 12345678)" required>
+                    </div>
+                    <div id="edit_documento_cliente_validation_message" class="field-validation-message"></div>
+                </div>
+                <input type="hidden" id="edit_vendedor_cliente_id" name="vendedor">
+                <div class="form-group full-width">
+                    <button type="submit">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="cotizaciones" class="page">
+    <h2>Registrar Cotización</h2>
+    <div class="quotation-form-and-preview-layout bg-white p-6 rounded-lg shadow-md">
+        <form id="quotation-form" action="/api/quotations" method="POST" class="form-grid2">
+            <div class="form-group">
+                <label for="cot_date">Fecha:</label>
+                <input type="text" id="cot_date" name="cot_date" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="cot_client">Cliente:</label>
+                <select id="cot_client" name="cot_client" required>
+                    <option value="">Seleccione cliente</option>
+                    </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="cot_validity">Validez (días):</label>
+                <input type="number" id="cot_validity" name="cot_validity" min="1" value="30" required>
+            </div>
+            
+            <h3>Productos/Servicios</h3>
+            <div id="quotation_items_container" class="po-items-container full-width space-y-2">
+                <div class="po-item-row header-row grid grid-cols-[0.8fr_2fr_0.5fr_0.5fr_1fr_1fr_0.2fr] gap-2 text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-2">
+                    <span class="text-center py-2 px-1 bg-gray-100 border border-gray-200 rounded-md shadow-sm">CÓDIGO</span>
+                    <span class="text-center py-2 px-1 bg-gray-100 border border-gray-200 rounded-md shadow-sm">DESCRIPCIÓN</span>
+                    <span class="text-center py-2 px-1 bg-gray-100 border border-gray-200 rounded-md shadow-sm">DÍAS</span>
+                    <span class="text-center py-2 px-1 bg-gray-100 border border-gray-200 rounded-md shadow-sm">CANTIDAD</span>
+                    <span class="text-center py-2 px-1 bg-gray-100 border border-gray-200 rounded-md shadow-sm">P. UNITARIO</span>
+                    <span class="text-center py-2 px-1 bg-gray-100 border border-gray-200 rounded-md shadow-sm">TOTAL</span>
+                </div>
+            </div>
+            <button type="button" id="add-quotation-item-btn" class="btn-add mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Agregar Item</button>
+
+            <div class="form-group full-width freight-options mt-4">
+                <label for="cot_include_freight" class="flex items-center">
+                    <input type="checkbox" id="cot_include_freight" name="cot_include_freight" class="mr-2">
+                    Incluir Flete en la Cotización
+                </label>
+                <div id="freight_cost_container" class="form-group mt-2" style="display: none;">
+                    <label for="cot_freight_cost">Costo del Flete:</label>
+                    <input type="text" id="cot_freight_cost" name="cot_freight_cost" placeholder="Ingrese el costo del flete" value="0.00">
+                </div>
+            </div>
+            <div class="form-group full-width totals-summary mt-6 p-4 bg-gray-50 rounded-md border border-gray-200 text-right space-y-1">
+                <p>Sub Total: <span id="cot_subtotal">0.00</span></p>
+                <p>Excento: <span id="cot_exempt_amount">0.00</span></p>
+                <p>Base Imponible: <span id="cot_taxable_base">0.00</span></p>
+                <p>IVA 16%: <span id="cot_iva_amount">0.00</span></p>
+                <p id="freight_summary_line">Flete: <span id="cot_freight_total">0.00</span></p>
+                <p>Total Operación: <span id="cot_total_amount">0.00</span></p>
+            </div>
+            
+            <div class="form-group full-width mt-6">
+                <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Registrar Cotización</button>
+            </div>
+        </form>
+
+        <div class="quotation-preview-wrapper">
+            <div id="quotation-preview" class="quotation-preview">
+                </div>
+        </div>
+    </div>
+</div>
+
+<div id="registro-cotizaciones" class="page">
+    <h2>Registro de Cotizaciones</h2>
+    <table id="quotations-table">
+        <thead>
+            <tr>
+                <th>Número de Cotización</th>
+                <th>Fecha Creada</th>
+                <th>Fecha de Vencimiento</th>
+                <th>Cliente</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Precio Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+</div>
+
+<div id="modal-mensaje" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="mensaje-texto"></p>
+        <button id="modal-close-btn">Cerrar</button>
+    </div>
+</div>
+
+<script>
+  window.userInfo = {
+      id: "{{ usuario.id }}",
+      nombre: "{{ usuario.nombre }}",
+      apellido: "{{ usuario.apellido }}",
+      nombreCompleto: "{{ usuario.nombre }} {{ usuario.apellido }}",
+      rol: "{{ usuario.rol }}"
+  };
+</script>
+<script src="/static/js/dashboard_vendedor.js"></script>
+<script src="/static/js/validation.js"></script>
+</body>
+</html>
